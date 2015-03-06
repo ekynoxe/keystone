@@ -15,7 +15,6 @@ var util = require('util'),
 function textarray(list, path, options) {
 	this._nativeType = [String];
 
-	this._underscoreMethods = ['crop'];
 	textarray.super_.call(this, list, path, options);
 }
 
@@ -25,15 +24,27 @@ function textarray(list, path, options) {
 
 util.inherits(textarray, super_);
 
-
 /**
- * Crops the string to the specifed length.
+ * Validates that a value for this field has been provided in a data object
  *
  * @api public
  */
 
-textarray.prototype.crop = function(item, length, append, preserveWords) {
-	return utils.cropString(item.get(this.path), length, append, preserveWords);
+textarray.prototype.validateInput = function(data, required, item) {
+	var value = this.getValueFromData(data);
+
+	if (required) {
+		if (value === undefined && item && item.get(this.path) && item.get(this.path).length) {
+			return true;
+		}
+		if (value === undefined || !Array.isArray(value) || ('string' !== typeof value) || ('number' !== typeof value)) {
+			return false;
+		}
+		if (Array.isArray(value) && !value.length) {
+			return false
+		}
+	}
+	return (value === undefined || Array.isArray(value) || ('string' === typeof value) || ('number' === typeof value));
 };
 
 /**
@@ -43,10 +54,21 @@ textarray.prototype.crop = function(item, length, append, preserveWords) {
  */
 
 textarray.prototype.updateItem = function(item, data) {
-	if ( data[this.path] === undefined ) {
-		item.set(this.path, []);
-	} else {
-		item.set(this.path, data[this.path]);
+	var value = this.getValueFromData(data);
+	
+	if ('undefined' !== typeof value) {
+		if (value === null) {
+			value = [];
+		}
+		if ('string' === typeof value) {
+			value = [value];
+		}
+		if ('number' === typeof value) {
+			value = [value.toString()];
+		}
+		if (Array.isArray(value)) {
+			item.set(this.path, value);
+		}
 	}
 };
 

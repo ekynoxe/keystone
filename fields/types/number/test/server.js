@@ -1,7 +1,4 @@
-var assert = require('assert'),
-	keystone = require('../../../..'),
-	demand = require('must'),
-	UpdateHandler = require('../../../../lib/updateHandler'),
+var demand = require('must'),
 	NumberType = require('../NumberType');
 
 exports.initList = function(List) {
@@ -15,7 +12,71 @@ exports.initList = function(List) {
 
 exports.testFieldType = function(List) {
 	var testItem = new List.model();
-
+	
+	it('should validate numeric input', function() {
+		demand(List.fields.number.validateInput({
+			number: 0
+		})).be(true);
+		demand(List.fields.number.validateInput({
+			number: 1
+		})).be(true);
+		demand(List.fields.number.validateInput({
+			number: -1
+		})).be(true);
+		demand(List.fields.number.validateInput({
+			number: 1.1
+		})).be(true);
+	});
+	
+	it('should validate string input', function() {
+		demand(List.fields.number.validateInput({
+			number: '0'
+		})).be(true);
+		demand(List.fields.number.validateInput({
+			number: '1'
+		})).be(true);
+		demand(List.fields.number.validateInput({
+			number: '-1'
+		})).be(true);
+		demand(List.fields.number.validateInput({
+			number: '1.1'
+		})).be(true);
+	});
+	
+	it('should validate no input', function() {
+		demand(List.fields.number.validateInput({})).be(true);
+		demand(List.fields.number.validateInput({}, true)).be(false);
+		testItem.number = 1;
+		demand(List.fields.number.validateInput({}, true, testItem)).be(true);
+		testItem.number = undefined;
+	});
+	
+	it('should validate empty strings', function() {
+		demand(List.fields.number.validateInput({
+			number: ''
+		})).be(true);
+		demand(List.fields.number.validateInput({
+			number: ''
+		}, true)).be(false);
+		testItem.number = 1;
+		demand(List.fields.number.validateInput({
+			number: ''
+		}, true, testItem)).be(true);
+		testItem.number = undefined;
+	});
+	
+	it('should invalidate invalid input', function() {
+		demand(List.fields.number.validateInput({
+			number: {}
+		})).be(false);
+		demand(List.fields.number.validateInput({
+			number: []
+		})).be(false);
+		demand(List.fields.number.validateInput({
+			number: 'a'
+		})).be(false);
+	});
+	
 	it('should update top level fields', function() {
 		List.fields.number.updateItem(testItem, {
 			number: 42
@@ -40,5 +101,32 @@ exports.testFieldType = function(List) {
 		});
 		demand(testItem.nested.number).be(42);
 		testItem.nested.number = undefined;
-	}); 
+	});
+	
+	it('should null value with empty string', function() {
+		testItem.number = 1;
+		List.fields.number.updateItem(testItem, {
+			number: ''
+		});
+		demand(testItem.number).be(null);
+		testItem.number = undefined;
+	});
+	
+	it('should null value when undefined', function() {
+		testItem.number = 1;
+		List.fields.number.updateItem(testItem, {
+			number: undefined
+		});
+		demand(testItem.number).be(null);
+		testItem.number = undefined;
+	});
+	
+	it('should convert string values', function() {
+		testItem.number = 1;
+		List.fields.number.updateItem(testItem, {
+			number: '50.50'
+		});
+		demand(testItem.number).be(50.50);
+		testItem.number = undefined;
+	});
 };

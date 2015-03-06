@@ -5,6 +5,8 @@ var React = require('react'),
 	moment = require('moment');
 
 module.exports = Field.create({
+	
+	displayName: 'DateField',
 
 	focusTargetRef: 'dateInput',
 
@@ -18,7 +20,9 @@ module.exports = Field.create({
 	},
 
 	getDefaultProps: function() {
-		formatString: 'Do MMM YYYY'
+		return { 
+			formatString: 'Do MMM YYYY'
+		};
 	},
 
 	// TODO: Move isValid() so we can share with server-side code
@@ -36,7 +40,7 @@ module.exports = Field.create({
 		this.setState({ value: dateValue });
 		this.props.onChange({
 			path: this.props.path,
-			value: this.isValid(dateValue) ? moment(dateValue, this.inputFormat).toISOString() : null
+			value: this.isValid(dateValue) ? dateValue : null
 		});
 	},
 

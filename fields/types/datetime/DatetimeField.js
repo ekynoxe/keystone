@@ -5,6 +5,8 @@ var React = require('react'),
 	moment = require('moment');
 
 module.exports = Field.create({
+	
+	displayName: 'DatetimeField',
 
 	focusTargetRef: 'dateInput',
 
@@ -23,7 +25,9 @@ module.exports = Field.create({
 	},
 
 	getDefaultProps: function() {
-		formatString: 'Do MMM YYYY, h:mm:ss a'
+		return { 
+			formatString: 'Do MMM YYYY, h:mm:ss a'
+		};
 	},
 
 	// TODO: Move isValid() so we can share with server-side code
