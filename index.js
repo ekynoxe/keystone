@@ -31,7 +31,7 @@ var moduleRoot = (function(_rootPath) {
  */
 
 var Keystone = function() {
-	
+	console.log('NO, NO, NO! USING THIS ONE!!!!');
 	this.lists = {};
 	this.paths = {};
 	this._options = {
@@ -99,7 +99,8 @@ var Keystone = function() {
 	// Attach middleware packages, bound to this instance
 	this.middleware = {
 		api: require('./lib/middleware/api')(this),
-		cors: require('./lib/middleware/cors')(this)
+		cors: require('./lib/middleware/cors')(this),
+		roles: require('./lib/middleware/roles')(this)
 	};
 	
 };
