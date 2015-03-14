@@ -7,7 +7,8 @@ var fs = require('fs'),
 	moment = require('moment'),
 	numeral = require('numeral'),
 	cloudinary = require('cloudinary'),
-	utils = require('keystone-utils');
+	utils = require('keystone-utils'),
+	prepost = require('./lib/prepost');
 
 var templateCache = {};
 
@@ -32,6 +33,10 @@ var moduleRoot = (function(_rootPath) {
 
 var Keystone = function() {
 	console.log('NO, NO, NO! USING THIS ONE!!!!');
+
+	prepost.mixin(this)
+		.register("pre:routes", "pre:render");
+
 	this.lists = {};
 	this.paths = {};
 	this._options = {
@@ -45,34 +50,30 @@ var Keystone = function() {
 		'module root': moduleRoot,
 		'frame guard': 'sameorigin'
 	};
-	this._pre = {
-		routes: [],
-		render: []
-	};
 	this._redirects = {};
-	
+
 	// expose express
-	
+
 	this.express = express;
-	
-	
+
+
 	// init environment defaults
-	
+
 	this.set('env', process.env.NODE_ENV || 'development');
-	
+
 	this.set('port', process.env.PORT || process.env.OPENSHIFT_NODEJS_PORT);
 	this.set('host', process.env.HOST || process.env.IP || process.env.OPENSHIFT_NODEJS_IP);
 	this.set('listen', process.env.LISTEN);
-	
+
 	this.set('ssl', process.env.SSL);
 	this.set('ssl port', process.env.SSL_PORT);
 	this.set('ssl host', process.env.SSL_HOST || process.env.SSL_IP);
 	this.set('ssl key', process.env.SSL_KEY);
 	this.set('ssl cert', process.env.SSL_CERT);
-	
+
 	this.set('cookie secret', process.env.COOKIE_SECRET);
 	this.set('cookie signin', (this.get('env') === 'development') ? true : false);
-	
+
 	this.set('embedly api key', process.env.EMBEDLY_API_KEY || process.env.EMBEDLY_APIKEY);
 	this.set('mandrill api key', process.env.MANDRILL_API_KEY || process.env.MANDRILL_APIKEY);
 	this.set('mandrill username', process.env.MANDRILL_USERNAME);
@@ -83,59 +84,39 @@ var Keystone = function() {
 	this.set('chartbeat property', process.env.CHARTBEAT_PROPERTY);
 	this.set('chartbeat domain', process.env.CHARTBEAT_DOMAIN);
 	this.set('allowed ip ranges', process.env.ALLOWED_IP_RANGES);
-	
+
 	if (process.env.S3_BUCKET && process.env.S3_KEY && process.env.S3_SECRET) {
 		this.set('s3 config', { bucket: process.env.S3_BUCKET, key: process.env.S3_KEY, secret: process.env.S3_SECRET, region: process.env.S3_REGION });
 	}
-	
+
 	if (process.env.AZURE_STORAGE_ACCOUNT && process.env.AZURE_STORAGE_ACCESS_KEY) {
 		this.set('azurefile config', { account: process.env.AZURE_STORAGE_ACCOUNT, key: process.env.AZURE_STORAGE_ACCESS_KEY });
 	}
-	
+
 	if (process.env.CLOUDINARY_URL) {
 		// process.env.CLOUDINARY_URL is processed by the cloudinary package when this is set
 		this.set('cloudinary config', true);
 	}
-	
+
 	// Attach middleware packages, bound to this instance
 	this.middleware = {
 		api: require('./lib/middleware/api')(this),
 		cors: require('./lib/middleware/cors')(this),
 		roles: require('./lib/middleware/roles')(this)
 	};
-	
+
 };
 
 _.extend(Keystone.prototype, require('./lib/core/options')());
 _.extend(Keystone.prototype, require('./lib/core/roles')());
 
 
-/**
- * Registers a pre-event handler.
- *
- * Valid events include:
- * - `routes` - calls the function before any routes are matched, after all other middleware
- *
- * @param {String} event
- * @param {Function} function to call
- * @api public
- */
-
-Keystone.prototype.pre = function(event, fn) {
-	if (!this._pre[event]) {
-		throw new Error('keystone.pre() Error: event ' + event + ' does not exist.');
-	}
-	this._pre[event].push(fn);
-	return this;
-};
-
-
 Keystone.prototype.prefixModel = function (key) {
 	var modelPrefix = this.get('model prefix');
-	
+
 	if (modelPrefix)
 		key = modelPrefix + '_' + key;
-	
+
 	return require('mongoose/lib/utils').toCollectionName(key);
 };
 
@@ -194,18 +175,18 @@ keystone.security = {
  */
 
 Keystone.prototype.import = function(dirname) {
-	
+
 	var initialPath = path.join(this.get('module root'), dirname);
-	
+
 	var doImport = function(fromPath) {
-		
+
 		var imported = {};
-		
+
 		fs.readdirSync(fromPath).forEach(function(name) {
-			
+
 			var fsPath = path.join(fromPath, name),
 			info = fs.statSync(fsPath);
-			
+
 			// recur
 			if (info.isDirectory()) {
 				imported[name] = doImport(fsPath);
@@ -217,12 +198,12 @@ Keystone.prototype.import = function(dirname) {
 					imported[base] = require(fsPath);
 				}
 			}
-			
+
 		});
-		
+
 		return imported;
 	};
-	
+
 	return doImport(initialPath);
 };
 
@@ -244,12 +225,12 @@ Keystone.prototype.applyUpdates = function(callback) {
 
 Keystone.prototype.console = {};
 Keystone.prototype.console.err = function(type, msg) {
-	
+
 	if (keystone.get('logger')) {
 		var dashes = '\n------------------------------------------------\n';
 		console.log(dashes + 'KeystoneJS: ' + type + ':\n\n' + msg + dashes);
 	}
-	
+
 };
 
 /**
