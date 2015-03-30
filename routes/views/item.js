@@ -4,15 +4,7 @@ var keystone = require('../../'),
 
 exports = module.exports = function(req, res) {
 	
-	var itemQuery = req.list.model.findById(req.params.item);
-	
-	if (req.list.tracking && req.list.tracking.createdBy) {
-		itemQuery.populate(req.list.tracking.createdBy);
-	}
-	
-	if (req.list.tracking && req.list.tracking.updatedBy) {
-		itemQuery.populate(req.list.tracking.updatedBy);
-	}
+	var itemQuery = req.list.model.findById(req.params.item).select();
 	
 	itemQuery.exec(function(err, item) {
 		
