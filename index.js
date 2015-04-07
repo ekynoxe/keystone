@@ -32,7 +32,9 @@ var moduleRoot = (function(_rootPath) {
  */
 
 var Keystone = function() {
-	console.log('NO, NO, NO! USING THIS ONE!!!!');
+	console.log('/!\\/!\\ --------------------------------------------------');
+	console.log('THIS IS THE ENDURANCE CAFE SPECIAL VERSION OF KEYSTONE');
+	console.log('/!\\/!\\ --------------------------------------------------');
 
 	prepost.mixin(this)
 		.register('pre:routes', 'pre:render');
