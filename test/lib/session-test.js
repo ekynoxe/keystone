@@ -88,22 +88,22 @@ describe('Keystone.session', function() {
 				function callWithNoArgs() {
 					keystone.session.signinWithUser();
 				}
-				callWithNoArgs.must.throw('keystone.session.signinWithUser requires user, req and res objects, and an onSuccess callback.');
+				callWithNoArgs.must.throw('keystone.sesson.signinWithUser requires user, req and res objects, and an onSuccess callback.');
 
 				function callWithOneArg() {
 					keystone.session.signinWithUser(user);
 				}
-				callWithOneArg.must.throw('keystone.session.signinWithUser requires user, req and res objects, and an onSuccess callback.');
+				callWithOneArg.must.throw('keystone.sesson.signinWithUser requires user, req and res objects, and an onSuccess callback.');
 
 				function callWithTwoArgs() {
 					keystone.session.signinWithUser(user, req);
 				}
-				callWithOneArg.must.throw('keystone.session.signinWithUser requires user, req and res objects, and an onSuccess callback.');
+				callWithOneArg.must.throw('keystone.sesson.signinWithUser requires user, req and res objects, and an onSuccess callback.');
 
 				function callWithThreeArgs() {
 					keystone.session.signinWithUser(user, req, res);
 				}
-				callWithOneArg.must.throw('keystone.session.signinWithUser requires user, req and res objects, and an onSuccess callback.');
+				callWithOneArg.must.throw('keystone.sesson.signinWithUser requires user, req and res objects, and an onSuccess callback.');
 			});
 
 			it('should error when user arg is not an object', function() {
