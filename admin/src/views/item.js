@@ -1,9 +1,9 @@
 var React = require('react');
 var request = require('superagent');
 
-var CreateForm = require('../../components/CreateForm');
-var EditForm = require('../../components/EditForm');
-var Header = require('./Header');
+var CreateForm = require('../components/CreateForm');
+var EditForm = require('../components/EditForm');
+var Header = require('../components/ItemViewHeader');
 
 var View = React.createClass({
 	
@@ -21,18 +21,18 @@ var View = React.createClass({
 	componentDidMount: function() {
 		request.get('/keystone/api/' + Keystone.list.path + '/' + this.props.itemId + '?drilldown=true')
 			.set('Accept', 'application/json')
-			.end((function(err, res) {
+			.end(function(err, res) {//eslint-disable-line no-unused-vars, handle-callback-err
 				if (!res.ok) {
 					// TODO: nicer error handling
 					console.log('Error loading item data:', res.text);
 					alert('Error loading data (details logged to console)');
 					return;
 				}
-				this.setState({
+				this.setState({//eslint-disable-line react/no-did-mount-set-state
 					itemData: res.body.data,
 					itemDrilldown: res.body.drilldown 
 				});
-			}).bind(this));
+			}.bind(this));
 	},
 	
 	toggleCreate: function(visible) {
@@ -59,6 +59,4 @@ var View = React.createClass({
 	
 });
 
-exports.render = function(id) {
-	React.render(<View itemId={id} />, document.getElementById('item-view'));
-};
+React.render(<View itemId={Keystone.itemId} />, document.getElementById('item-view'));

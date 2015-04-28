@@ -2,15 +2,8 @@ var fs = require('fs'),
 	path = require('path'),
 	_ = require('underscore'),
 	express = require('express'),
-	async = require('async'),
-	jade = require('jade'),
-	moment = require('moment'),
-	numeral = require('numeral'),
-	cloudinary = require('cloudinary'),
 	utils = require('keystone-utils'),
-	prepost = require('./lib/prepost');
-
-var templateCache = {};
+	grappling = require('grappling-hook');
 
 /**
  * Don't use process.cwd() as it breaks module encapsulation
@@ -30,12 +23,11 @@ var moduleRoot = (function(_rootPath) {
  *
  * @api public
  */
-
 var Keystone = function() {
 	console.log('NO, NO, NO! USING THIS ONE!!!!');
 
-	prepost.mixin(this)
-		.register('pre:routes', 'pre:render');
+	grappling.mixin(this)
+		.allowHooks('pre:routes', 'pre:render');
 	this.lists = {};
 	this.paths = {};
 	this._options = {
@@ -52,12 +44,9 @@ var Keystone = function() {
 	this._redirects = {};
 
 	// expose express
-
 	this.express = express;
 
-
 	// init environment defaults
-
 	this.set('env', process.env.NODE_ENV || 'development');
 
 	this.set('port', process.env.PORT || process.env.OPENSHIFT_NODEJS_PORT);
@@ -103,7 +92,6 @@ var Keystone = function() {
 		cors: require('./lib/middleware/cors')(this),
 		roles: require('./lib/middleware/roles')(this)
 	};
-
 };
 
 _.extend(Keystone.prototype, require('./lib/core/options')());
@@ -121,46 +109,42 @@ Keystone.prototype.prefixModel = function (key) {
 };
 
 /* Attach core functionality to Keystone.prototype */
+Keystone.prototype.bindEmailTestRoutes = require('./lib/core/bindEmailTestRoutes');
+Keystone.prototype.connect = require('./lib/core/connect');
+Keystone.prototype.createItems = require('./lib/core/createItems');
+Keystone.prototype.getOrphanedLists = require('./lib/core/getOrphanedLists');
+Keystone.prototype.importer = require('./lib/core/importer');
 Keystone.prototype.init = require('./lib/core/init');
 Keystone.prototype.initNav = require('./lib/core/initNav');
-Keystone.prototype.connect = require('./lib/core/connect');
-Keystone.prototype.start = require('./lib/core/start');
+Keystone.prototype.list = require('./lib/core/list');
 Keystone.prototype.mount = require('./lib/core/mount');
-Keystone.prototype.routes = require('./lib/core/routes');
-Keystone.prototype.static = require('./lib/core/static');
-Keystone.prototype.render = require('./lib/core/render');
-Keystone.prototype.importer = require('./lib/core/importer');
-Keystone.prototype.createItems = require('./lib/core/createItems');
 Keystone.prototype.populateRelated = require('./lib/core/populateRelated');
 Keystone.prototype.redirect = require('./lib/core/redirect');
-Keystone.prototype.list = require('./lib/core/list');
-Keystone.prototype.getOrphanedLists = require('./lib/core/getOrphanedLists');
-Keystone.prototype.bindEmailTestRoutes = require('./lib/core/bindEmailTestRoutes');
+Keystone.prototype.render = require('./lib/core/render');
+Keystone.prototype.routes = require('./lib/core/routes');
+Keystone.prototype.start = require('./lib/core/start');
 Keystone.prototype.wrapHTMLError = require('./lib/core/wrapHTMLError');
-
 
 /**
  * The exports object is an instance of Keystone.
  *
  * @api public
  */
-
 var keystone = module.exports = exports = new Keystone();
 
 // Expose modules and Classes
-keystone.utils = utils;
-keystone.Keystone = Keystone;
-keystone.content = require('./lib/content');
-keystone.List = require('./lib/list');
+keystone.Email = require('./lib/email');
 keystone.Field = require('./fields/types/Type');
 keystone.Field.Types = require('./lib/fieldTypes');
+keystone.Keystone = Keystone;
+keystone.List = require('./lib/list');
 keystone.View = require('./lib/view');
-keystone.Email = require('./lib/email');
 
+keystone.content = require('./lib/content');
 keystone.security = {
 	csrf: require('./lib/security/csrf')
 };
-
+keystone.utils = utils;
 
 /**
  * returns all .js modules (recursively) in the path specified, relative
@@ -225,12 +209,10 @@ Keystone.prototype.applyUpdates = function(callback) {
 
 Keystone.prototype.console = {};
 Keystone.prototype.console.err = function(type, msg) {
-
 	if (keystone.get('logger')) {
 		var dashes = '\n------------------------------------------------\n';
 		console.log(dashes + 'KeystoneJS: ' + type + ':\n\n' + msg + dashes);
 	}
-
 };
 
 /**
