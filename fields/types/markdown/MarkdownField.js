@@ -18,8 +18,8 @@ var toggleHeading = function(e, level) {
 	}
 
 	// transform selection and set the cursor into chunked text
-	if ((pointer = level.length + 1, content.substr(selected.start-pointer,pointer) === level + ' ')
-		|| (pointer = level.length, content.substr(selected.start-pointer,pointer) === level)) {
+	if ((pointer = level.length + 1, content.substr(selected.start-pointer, pointer) === level + ' ')
+		|| (pointer = level.length, content.substr(selected.start-pointer, pointer) === level)) {
 		e.setSelection(selected.start-pointer, selected.end);
 		e.replaceSelection(chunk);
 		cursor = selected.start-pointer;
@@ -89,7 +89,7 @@ var renderMarkdown = function(component) {
 
 	if (component.props.toolbarOptions.hiddenButtons) {
 		var hiddenButtons = ('string' === typeof component.props.toolbarOptions.hiddenButtons) ? component.props.toolbarOptions.hiddenButtons.split(',') : component.props.toolbarOptions.hiddenButtons;
-		options.hiddenButtons = markdownOptions.hiddenButtons.concat(hiddenButtons);
+		options.hiddenButtons = options.hiddenButtons.concat(hiddenButtons);
 	}
 	
 	$(component.refs.markdownTextarea.getDOMNode()).markdown(options);
